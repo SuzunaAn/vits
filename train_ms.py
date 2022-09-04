@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import argparse
 import itertools
@@ -231,6 +232,27 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         evaluate(hps, net_g, eval_loader, writer_eval)
         utils.save_checkpoint(net_g, optim_g, hps.train.learning_rate, epoch, os.path.join(hps.model_dir, "G_{}.pth".format(global_step)))
         utils.save_checkpoint(net_d, optim_d, hps.train.learning_rate, epoch, os.path.join(hps.model_dir, "D_{}.pth".format(global_step)))
+
+        names = []
+        list_old = os.listdir('/content/drive/MyDrive/mur')
+        for old in list_old:
+          ext = os.path.splitext(old)
+          if ext[1] == '.pth':
+            name = ext[0].replace('.pth','')
+            names.append(name)
+
+        for sub1 in names:
+          spl1 = re.split('_',sub1)
+          if(spl1[0] == 'G' or spl1[0] == 'D'):
+            num1 = int(spl1[1])
+            for sub2 in names:
+              spl2 = re.split('_',sub2)
+              if(spl2[0] == spl1[0]):
+                num2 = int(spl2[1])
+                if(num1-num2 == 10000):
+                  os.remove('/content/drive/MyDrive/mur/'+sub2+'.pth')
+                  print('Deleted : '+sub2+'.pth')
+
     global_step += 1
   
   if rank == 0:
